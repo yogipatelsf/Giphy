@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+	<title>Giphy</title>
+	<style>
+
+	.item {
+		display: block;float: left;margin-right: 5px;
+	}
+	h1 {color: white;
+		font-size: 44px;
+	}
+	label {color: white;
+	font-size: 44px;
+
+	}
+	p {color: white;
+	font-size: 24px;
+}
+button {
+	height: 50px;
+	width: auto;
+	background-color: green;
+	font-size: 34px;
+	color: white;
+	margin-right: 5px;
+
+}
+
+</style>
+</head>
+<body style="background-image: url('https://2sltl91mfmb53nr7sf3j0zxj-wpengine.netdna-ssl.com/wp-content/uploads/2016/07/OaklandSkyline_OaklandEstuary_Nighttime_Pano_CROP_2500x1190_rev0.jpg');>
+<div class="container">
+    <h1>Cities</h1>
+
+    <div id="cities-view"></div>
+
+    <form id="city-form">
+    <div class='field'>
+      <label for="city-input"></label>
+       <input type="text" placeholder="Type a Name of a City" id="city-input" required style="font-size: 35px; height: 40px; width: 500px;"><br>
+	</div>
+	 <div class='actions'>
+      <input id="add-city" type="submit" value="Submit"  style="font-size: 35px;
+      height: 400px; width: 508px; display: none;">
+  </div>
+    </form>
+
+     <div id="gifs-appear-here">
+
+     	  </div>
+</body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+  
+      var topics = [];
+
+      // Function for running buttons script
+      function renderButtons() {
+
+  //     	If ($("#city-input").val("")) = {
+		//     $("button").prop("disabled",true);
+		// }
+
+
+        // Deleting the buttons prior to adding new buttons
+        // This is necessary otherwise we will have repeat buttons
+        $("#cities-view").empty();
+
+        // Looping through the array of topics
+        for (var i = 0; i < topics.length; i++) {
+
+          // Then dynamicaly generating buttons for each topic in the array.
+          // This code $("<button>") is all jQuery needs to create the start and end tag. (<button></button>)
+          var a = $("<button>");
+          // Adding a class
+          a.addClass("city");
+          // Adding a data-attribute with a value of the city at index i
+          a.attr("data-name", topics[i]);
+          // Providing the button's text with a value of the city at index i
+          a.text(topics[i]);
+          // Adding the button to the HTML
+          $("#cities-view").append(a);
+        }
+      }
+   
+
+      // This function handles events where one button is clicked
+      $("#add-city").on("click", function(event) {
+
+        event.preventDefault();
+
+        // This line will grab the text from the input box
+        var newCity = $("#city-input").val().trim();
+        // The city from the textbox is then added to our topic array
+        topics.push(newCity);
+
+        // calling renderButtons which handles the processing of our topic array
+        renderButtons();
+
+ // Event listener for all button elements
+    $("button").on("click", function() {
+      // In this case, the "this" keyword refers to the button that was clicked
+      var town = $(this).attr("data-name");
+
+      // Constructing a URL to search Giphy 
+      var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+        town + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+      // Performing our AJAX GET request
+      $.ajax({
+          url: queryURL,
+          method: "GET"
+        })
+
+        // After the data comes back from the API
+        .done(function(response) {
+          // Storing an array of results in the results variable
+          var results = response.data;
+             console.log(results)
+          // Looping over every result item
+          for (var i = 0; i < results.length; i++) {
+
+              // Creating a div with the class "item"
+              var gifDiv = $("<div class='item'>");
+           
+
+              // // Storing the result item's rating
+              var rating = results[i].rating;
+
+              // // Creating a paragraph tag with the result item's rating
+              var p = $("<p>").text("Rating: " + rating);
+
+              // Creating an image tag
+              var Image = $("<img>");
+
+              // Giving the image tag an src attribute of a proprty pulled off the
+              // result item
+              Image.attr("src", results[i].images.fixed_height.url);
+           
+              Image.attr("data-animate", results[i].images.fixed_height.url);
+              Image.attr("data-still", results[i].images.fixed_height_still.url);
+              Image.attr("data-state", "still");
+              Image.attr("class", "gif");
+         
+
+              // Appending the paragraph and Image we created to the "gifDiv" div we created
+              gifDiv.append(p);
+              gifDiv.append(Image);
+
+              // Prepending the gifDiv to the "#gifs-appear-here" div in the HTML
+              $("#gifs-appear-here").prepend(gifDiv);
+
+		
+              $(".gif").on("click", function() {
+
+      // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+      var state = $(this).attr("data-state");
+      // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+      // Then, set the image's data-state to animate
+      // Else set src to the data-still value
+      if (state === "still") {
+        $(this).attr("src", $(this).attr("data-animate"));
+        $(this).attr("data-state", "animate");
+      } else {
+        $(this).attr("src", $(this).attr("data-still"));
+        $(this).attr("data-state", "still");
+      }
+    });
+            }
+          
+        });
+    });
+
+ });
+ renderButtons();
+
+$(document).ready(function() {
+    $('.field input').keyup(function() {
+
+        var empty = false;
+        $('.field input').each(function() {
+            if ($(this).val().length == 0) {
+                empty = true;
+            }
+        });
+
+        if (empty) {
+            $('.actions input').css({'display': 'none'});
+        } else {
+            $('.actions input').css({'display': 'block'});
+        }
+    });
+});
+
+    </script>
+
+
+
+
+</html>
